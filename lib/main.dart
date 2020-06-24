@@ -1,12 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:newday/repo/db/db.dart';
+import 'package:newday/repo/repo.dart';
 import 'package:provider/provider.dart';
 import 'package:shake/shake.dart';
 
 import 'router.gr.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(NewDayApp());
 }
 
@@ -43,8 +45,14 @@ class _NewDayAppState extends State<NewDayApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Provider.value(
-      value: _db,
+    return MultiProvider(
+      providers: [
+        Provider.value(value: _db),
+        Provider(
+          create: (_) => Sync(db: _db),
+          lazy: false,
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: ExtendedNavigator<Router>(router: Router()),

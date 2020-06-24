@@ -2,38 +2,37 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:newday/repo/db/db.dart';
 import 'package:newday/repo/db/model/model.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:newday/view/habit_edit.dart';
 
 import 'entry_edit.dart';
 
 class HabitTile extends StatelessWidget {
   final FullHabit habit;
   final Function onEntryInsert;
-  final Function onDismissed;
 
-  HabitTile({this.habit, this.onEntryInsert, this.onDismissed});
+  HabitTile({this.habit, this.onEntryInsert});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Dismissible(
-        confirmDismiss: (_) => _showConfirmDeleteAlert(context),
-        onDismissed: (_) => onDismissed(),
-        key: ValueKey(habit.habit.id),
-        child: GestureDetector(
-          onLongPress: () => showModalBottomSheet(
-              context: context,
-              builder: (_) => EntryEditView(
-                    habit: habit.habit,
-                  )).then(onEntryInsert),
-          onTap: () => onEntryInsert(Entrie(
-            id: null,
-            habitId: habit.habit.id,
-            date: DateTime.now(),
-          )),
-          child: _buildBody(context),
-        ),
+      child: GestureDetector(
+        onLongPress: () => showModalBottomSheet(
+            context: context,
+            builder: (_) => HabitEditView(
+                  habit: habit.habit,
+                )),
+        onDoubleTap: () => showModalBottomSheet(
+            context: context,
+            builder: (_) => EntryEditView(
+                  habit: habit.habit,
+                )).then(onEntryInsert),
+        onTap: () => onEntryInsert(Entrie(
+          id: null,
+          habitId: habit.habit.id,
+          date: DateTime.now(),
+        )),
+        child: _buildBody(context),
       ),
     );
   }
@@ -76,30 +75,5 @@ class HabitTile extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Future<bool> _showConfirmDeleteAlert(BuildContext context) {
-    return Alert(
-      context: context,
-      type: AlertType.warning,
-      title: 'Delete habit?',
-      desc: 'Do you want to remove ${habit.habit.title}?',
-      buttons: [
-        DialogButton(
-          child: Text(
-            'YES',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          onPressed: () => Navigator.of(context).pop(true),
-        ),
-        DialogButton(
-          child: Text(
-            'NO',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          onPressed: () => Navigator.of(context).pop(false),
-        )
-      ],
-    ).show();
   }
 }

@@ -11,8 +11,7 @@ part 'db.g.dart';
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'db.sqlite'));
+    final file = File(await NewDayDB.dbPath());
 //    await file.delete();
     return VmDatabase(file, logStatements: true);
   });
@@ -20,11 +19,21 @@ LazyDatabase _openConnection() {
 
 @UseMoor(tables: [Habits, Entries, Reminders])
 class NewDayDB extends _$NewDayDB {
+  static Future<String> dbPath() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    return p.join(dbFolder.path, 'db.sqlite');
+  }
+
   NewDayDB() : super(_openConnection());
 
   Future<List<FullHabit>> allHabits() async {
     final all = await select(habits).get();
     return _joinEntries(all);
+  }
+
+  Future<bool> hasHabits() async {
+    final all = await select(habits).get();
+    return all.isNotEmpty;
   }
 
   Stream<List<FullHabit>> watchHabits() {
@@ -71,6 +80,10 @@ class NewDayDB extends _$NewDayDB {
 
   Future<int> upsertReminder(Reminder r) {
     return into(reminders).insertOnConflictUpdate(r);
+  }
+
+  Future<int> deleteEntry(Entrie e) {
+    return (delete(entries)..where((tbl) => tbl.id.equals(e.id))).go();
   }
 
   Future<int> deleteHabit(Habit h) async {

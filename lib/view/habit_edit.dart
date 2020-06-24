@@ -81,14 +81,33 @@ class _HabitEditViewState extends State<HabitEditView> {
           ),
           SizedBox(height: 20),
           RaisedButton(
-              child: Text('Save'),
-              onPressed:
-                  fbKey.currentState == null || !fbKey.currentState.validate()
+            child: Text('Save'),
+            onPressed:
+                fbKey.currentState == null || !fbKey.currentState.validate()
+                    ? null
+                    : onFinish,
+          ),
+          isEditMode
+              ? RaisedButton(
+                  child: Text('Delete'),
+                  onPressed: fbKey.currentState == null ||
+                          !fbKey.currentState.validate()
                       ? null
-                      : onFinish),
+                      : onDelete,
+                )
+              : Container(),
         ],
       ),
     );
+  }
+
+  void onDelete() async {
+    try {
+      await Provider.of<NewDayDB>(context, listen: false).deleteHabit(habit);
+      ExtendedNavigator.of(context).pop();
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   void onFinish() async {

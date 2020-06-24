@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:newday/repo/db/model/model.dart';
+import 'package:newday/view/alerts.dart';
 import 'package:provider/provider.dart';
 
 import '../repo/repo.dart';
@@ -18,20 +19,24 @@ class _HomeViewState extends State<HomeView> {
   NewDayDB _db;
   List<FullHabit> _habits;
   StreamSubscription _habitSubscription;
+  var _isLoading = false;
 
   @override
   void initState() {
-    Future.microtask(() async {
-      _db = Provider.of<NewDayDB>(context, listen: false);
-      _habits = await _db.allHabits();
-      _habitSubscription = _db.watchHabits().listen((h) {
-        _habits = h;
-        setState(() {});
-      });
+    Future.microtask(() => _initData());
+    super.initState();
+  }
 
+  void _initData() async {
+    _db = Provider.of<NewDayDB>(context, listen: false);
+    _habits = await _db.allHabits();
+    await _habitSubscription?.cancel();
+    _habitSubscription = _db.watchHabits().listen((h) {
+      _habits = h;
       setState(() {});
     });
-    super.initState();
+
+    setState(() {});
   }
 
   @override
@@ -45,6 +50,23 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: Text('NewDay'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () async {
+              setState(() {
+                _isLoading = true;
+              });
+
+              await Provider.of<Sync>(context, listen: false).sync();
+
+              Alerts.showToast(context, 'Sync successful!');
+              setState(() {
+                _isLoading = false;
+              });
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
@@ -75,26 +97,32 @@ class _HomeViewState extends State<HomeView> {
       return _buildEmptyState();
     }
 
-    return GridView.builder(
-      padding: EdgeInsets.all(20),
-      itemCount: _habits.length,
-      gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-      itemBuilder: (context, index) {
-        return HabitTile(
-          habit: _habits[index],
-          onDismissed: () => _db.deleteHabit(_habits[index].habit),
-          onEntryInsert: (entry) {
-            if (entry == null) {
-              return;
-            }
-            HapticFeedback.lightImpact();
-            _habits[index].entries.add(entry);
-            _db.upsertEntry(entry);
-            setState(() {});
-          },
-        );
-      },
+    return Column(
+      children: <Widget>[
+        _isLoading ? LinearProgressIndicator() : SizedBox(height: 6),
+        Expanded(
+          child: GridView.builder(
+            padding: EdgeInsets.all(20),
+            itemCount: _habits.length,
+            gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+            itemBuilder: (context, index) {
+              return HabitTile(
+                habit: _habits[index],
+                onEntryInsert: (entry) {
+                  if (entry == null) {
+                    return;
+                  }
+                  HapticFeedback.lightImpact();
+                  _habits[index].entries.add(entry);
+                  _db.upsertEntry(entry);
+                  setState(() {});
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
