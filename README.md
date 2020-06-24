@@ -16,3 +16,4 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 Android - flutter build apk -t lib/main.dart --target-platform android-arm,android-arm64 --split-per-abi
+flutter build ios --release --no-codesign

@@ -13,4 +13,7 @@ class $Router {
 
   @MaterialRoute()
   MoorDbViewer moorDbRoute;
+
+  @MaterialRoute()
+  EntryListView entryListRoute;
 }

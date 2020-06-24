@@ -197,7 +197,7 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
   GeneratedTextColumn get title => _title ??= _constructTitle();
   GeneratedTextColumn _constructTitle() {
     return GeneratedTextColumn('title', $tableName, false,
-        minTextLength: 6, maxTextLength: 32);
+        minTextLength: 2, maxTextLength: 32);
   }
 
   final VerificationMeta _goalPerDayMeta = const VerificationMeta('goalPerDay');

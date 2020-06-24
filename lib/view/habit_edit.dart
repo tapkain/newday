@@ -2,12 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:newday/repo/db/db.dart';
+import 'package:newday/repo/db/model/model.dart';
 import 'package:provider/provider.dart';
 
 import '../repo/repo.dart';
+import '../router.gr.dart';
 
 class HabitEditView extends StatefulWidget {
-  final Habit habit;
+  final FullHabit habit;
 
   const HabitEditView({this.habit});
 
@@ -25,7 +27,7 @@ class _HabitEditViewState extends State<HabitEditView> {
   void initState() {
     var colors = Colors.primaries.toList();
     colors = colors..shuffle();
-    habit = widget.habit ??
+    habit = widget.habit?.habit ??
         Habit(
           id: null,
           title: null,
@@ -80,6 +82,30 @@ class _HabitEditViewState extends State<HabitEditView> {
             step: 1,
           ),
           SizedBox(height: 20),
+          isEditMode && widget.habit.entries.isNotEmpty
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      '${widget.habit.entries.length} Entries',
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
+                    FlatButton(
+                      child: Text(
+                        'see all >',
+                        style: Theme.of(context)
+                            .textTheme
+                            .button
+                            .apply(color: Colors.lightBlue),
+                      ),
+                      onPressed: () => ExtendedNavigator.of(context).pushNamed(
+                          Routes.entryListRoute,
+                          arguments:
+                              EntryListViewArguments(habit: widget.habit)),
+                    ),
+                  ],
+                )
+              : Container(),
           RaisedButton(
             child: Text('Save'),
             onPressed:

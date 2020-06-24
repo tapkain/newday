@@ -20,7 +20,7 @@ class HabitTile extends StatelessWidget {
         onLongPress: () => showModalBottomSheet(
             context: context,
             builder: (_) => HabitEditView(
-                  habit: habit.habit,
+                  habit: habit,
                 )),
         onDoubleTap: () => showModalBottomSheet(
             context: context,
